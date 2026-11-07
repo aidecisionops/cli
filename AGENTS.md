@@ -74,7 +74,7 @@ bash ./publish-new-version.sh
 ## CI/CD
 
 - Release: triggered by `v*` tags, builds binaries on Ubuntu/macOS/Windows (x64/arm64)
-- Worker deploy: on push to main when `worker/` or `wrangler.jsonc` changes
+- Installer Worker deployment is managed separately from public binary releases. Deploy with an authorized Cloudflare account only after the replacement release assets are verified. The public repository does not contain deployment credentials or an automatic Worker deployment workflow.
 - Prefer `bash ./publish-new-version.sh` for releases. It bumps versions, runs tests, commits, tags, pushes, waits for GitHub Actions, and writes a release report.
 
 ## Dependencies
