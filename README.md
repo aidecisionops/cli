@@ -50,7 +50,7 @@ dops update
 Pin to a specific release:
 
 ```bash
-dops update --version v0.1.26
+dops update --version v0.1.27
 ```
 
 This re-runs the same hosted installer flow used for first-time installation and writes the updated binary to the existing install directory unless you pass `--install-dir`.
@@ -78,7 +78,7 @@ bash ./publish-new-version.sh
 | Variable | Default | Description |
 |---|---|---|
 | `DOPS_INSTALL_DIR` | `~/.dops/bin` | Install location for the binary |
-| `DOPS_VERSION` | `latest` | Specific release tag such as `v0.1.26` |
+| `DOPS_VERSION` | `latest` | Specific release tag such as `v0.1.27` |
 
 ## Five-minute setup
 

@@ -5,7 +5,7 @@ from importlib import metadata
 from pathlib import Path
 import re
 
-DEFAULT_VERSION = "0.1.26"
+DEFAULT_VERSION = "0.1.27"
 _SEMVER_LIKE_PATTERN = re.compile(r"^\d+\.\d+\.\d+(?:[-+][\w.-]+)?$")
 
 

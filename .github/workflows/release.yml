@@ -23,7 +23,7 @@ jobs:
           - runner: macos-15-intel
             artifact_name: dops-darwin-x64
             binary_path: dist/dops
-          - runner: macos-14
+          - runner: macos-15
             artifact_name: dops-darwin-arm64
             binary_path: dist/dops
           - runner: windows-latest

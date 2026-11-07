@@ -14,7 +14,7 @@ jobs:
         include:
           - runner: ubuntu-24.04
             binary_path: dist/dops
-          - runner: macos-14
+          - runner: macos-15
             binary_path: dist/dops
           - runner: windows-latest
             binary_path: dist/dops.exe
