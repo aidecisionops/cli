@@ -6,12 +6,23 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from dops.command_groups.repo import _CREATE_PROJECT, _KEEP_EXISTING_BINDING, _MANUAL_SELECTION, _doctor_platform_issue, _existing_binding_access_summary, _organization_options, _pick_option, _project_options, _resolve_binding_from_workspace_context, _verify_or_attach_project_repository, run_doctor, run_init
+from dops.command_groups.repo import _CREATE_PROJECT, _KEEP_EXISTING_BINDING, _MANUAL_SELECTION, _doctor_platform_issue, _existing_binding_access_summary, _organization_options, _pick_option, _project_options, _resolve_binding_from_workspace_context, _verify_or_attach_project_repository, run_doctor, run_init, run_install
 from dops.mcp_inspect import ApiAuthProbeResult, McpReachabilityResult
 from dops.ui import SelectOption
 
 
 class RepoCommandTests(unittest.TestCase):
+    def test_refresh_failure_stops_before_any_configuration_is_written(self) -> None:
+        flags = argparse.Namespace(refresh=True, source_dir=None)
+        with patch("dops.command_groups.repo.ensure_skill_repo_cache", side_effect=RuntimeError("network unavailable")), patch("dops.command_groups.repo.install_platforms") as install:
+            with self.assertRaisesRegex(RuntimeError, "network unavailable"):
+                run_install(flags)
+            install.assert_not_called()
+
+    def test_refresh_and_local_source_are_mutually_exclusive(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "not both"):
+            run_install(argparse.Namespace(refresh=True, source_dir="/tmp/local-skill"))
+
     def test_doctor_platform_issue_translates_missing_bundle_error(self) -> None:
         message = _doctor_platform_issue(
             RuntimeError("Could not find platform definitions. Ensure @decisionops/skill is installed or is adjacent.")

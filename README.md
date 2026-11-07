@@ -50,7 +50,7 @@ dops update
 Pin to a specific release:
 
 ```bash
-dops update --version v0.1.27
+dops update --version v0.1.28
 ```
 
 This re-runs the same hosted installer flow used for first-time installation and writes the updated binary to the existing install directory unless you pass `--install-dir`.
@@ -78,7 +78,7 @@ bash ./publish-new-version.sh
 | Variable | Default | Description |
 |---|---|---|
 | `DOPS_INSTALL_DIR` | `~/.dops/bin` | Install location for the binary |
-| `DOPS_VERSION` | `latest` | Specific release tag such as `v0.1.27` |
+| `DOPS_VERSION` | `latest` | Specific release tag such as `v0.1.28` |
 
 ## Five-minute setup
 
@@ -136,7 +136,7 @@ There is no API key or token-based alternative for IDE MCP authentication.
 | Path | Written by | Purpose |
 |---|---|---|
 | `~/.decisionops/auth.json` | `dops login` | Stores CLI auth state |
-| `~/.codex/skills/decision-ops` | `dops install codex` | Installs the DecisionOps skill for Codex |
+| `~/.agents/skills/decision-ops` | `dops install codex` | Installs the DecisionOps skill for Codex |
 | `~/.codex/config.toml` | `dops install codex` | Adds the DecisionOps MCP server to Codex |
 | `~/.claude/skills/decision-ops` | `dops install claude-code` | Installs the DecisionOps skill for Claude Code |
 | `~/.cursor/skills/decision-ops` | `dops install cursor` | Installs the DecisionOps skill for Cursor |
@@ -178,7 +178,7 @@ Use it whenever you are unsure whether the CLI, manifest, or editor integration 
 | Platform | Skill install | MCP config | Default MCP location |
 |---|---|---|---|
 | Claude Code | yes | yes | `<repo>/.mcp.json` |
-| VS Code | no | yes | `<repo>/.vscode/mcp.json` |
+| VS Code | yes | yes | `<repo>/.vscode/mcp.json` |
 | Cursor | yes | yes | `<repo>/.cursor/mcp.json` |
 | Codex | yes | yes | `~/.codex/config.toml` |
 | Antigravity | yes | yes | `~/.gemini/config/mcp_config.json` (override via `ANTIGRAVITY_MCP_CONFIG_PATH`) |
@@ -364,3 +364,9 @@ pyinstaller --onefile --name dops dops_bootstrap.py
 ## License
 
 Apache-2.0
+
+## Refresh the skill and platform catalog
+
+With dops 0.1.28 or later, run `dops platform list --refresh` to download current public resources, or `dops install <platform> --refresh` to refresh before installation. Add `--skip-mcp` when the existing MCP connection works. A failed refresh exits before configuration is changed. Existing local skill customizations should be reviewed before reinstalling.
+
+Skill-only location overrides are `CODEX_SKILLS_DIR`, `VSCODE_SKILLS_DIR`, `CLAUDE_SKILLS_DIR`, `CURSOR_SKILLS_DIR`, and `ANTIGRAVITY_SKILLS_DIR`. Codex MCP configuration still uses `~/.codex/config.toml`; its skill destination is `~/.agents/skills/decision-ops`. VS Code Copilot uses `~/.copilot/skills/decision-ops`.

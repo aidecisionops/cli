@@ -359,7 +359,7 @@ def install_platforms(options: dict[str, object]) -> InstallResult:
                 "repo_id": (
                     str(options["repo_id"])
                     if options.get("repo_id")
-                    else (str(existing_manifest["repo_id"]) if existing_manifest and existing_manifest.get("repo_id") else None)
+                    else (str(existing_manifest["repo_id"]) if existing_manifest and existing_manifest.get("repo_id") and existing_manifest.get("repo_ref") == repo_ref and existing_manifest.get("org_id") == org_id else None)
                 ),
                 "default_branch": default_branch,
                 "mcp_server_name": server_name,

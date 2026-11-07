@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import json
+from pathlib import Path
+
+from ..manifest import manifest_summary
 
 from ..argparse_utils import DopsHelpFormatter, add_examples
 from ..config import effective_config
@@ -45,3 +49,12 @@ def register_config_commands(subparsers: argparse._SubParsersAction[argparse.Arg
         description="Show the config file path dops will read",
     )
     path.set_defaults(func=lambda args: run_config_path())
+
+
+def register_manifest_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    manifest = subparsers.add_parser("manifest", help="Read the repository binding without authentication")
+    commands = manifest.add_subparsers(dest="manifest_command")
+    manifest.set_defaults(func=lambda args: manifest.print_help() or 0)
+    show = commands.add_parser("show", help="Validate the repository manifest and emit binding fields as JSON")
+    show.add_argument("--repo-path", default=".", help="Repository root (defaults to current directory)")
+    show.set_defaults(func=lambda args: print(json.dumps(manifest_summary(str(Path(args.repo_path).resolve())), indent=2)))

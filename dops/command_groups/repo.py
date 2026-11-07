@@ -41,7 +41,7 @@ from ..git import infer_default_branch, resolve_repo_path
 from ..installer import cleanup_platforms, install_platforms
 from ..manifest import InvalidManifestError, read_manifest, write_manifest
 from ..platforms import load_platforms, resolve_install_path
-from ..resources import find_platforms_dir, find_skill_source_dir, resolve_local_skill_repo
+from ..resources import ensure_skill_repo_cache, find_platforms_dir, find_skill_source_dir, resolve_local_skill_repo
 from ..tls import describe_tls_setup
 from ..ui import PromptChrome, SelectOption, console, flow_chrome, prompt_confirm, prompt_select, prompt_text, render_cleanup_summary, render_doctor_report, render_install_summary, reset_flow_state, with_spinner
 from .shared import (
@@ -592,6 +592,7 @@ def run_init(flags: argparse.Namespace) -> None:
             "mcp_server_url": resolve_server_url(flags.server_url),
             "repo_id": flags.repo_id,
         },
+        replace_invalid=bool(existing_manifest_error),
     )
     console.print(f"Wrote manifest: {manifest_path}")
     link_status, link_message = _verify_or_attach_project_repository(
@@ -611,6 +612,10 @@ def run_init(flags: argparse.Namespace) -> None:
 
 def run_install(flags: argparse.Namespace) -> None:
     reset_flow_state()
+    if getattr(flags, "refresh", False):
+        if flags.source_dir:
+            raise RuntimeError("Choose --refresh for published resources or --source-dir for local resources, not both.")
+        ensure_skill_repo_cache(refresh=True)
     if flags.source_dir:
         platforms_dir, resolved_source_dir = resolve_local_skill_repo(flags.source_dir)
     else:
@@ -1034,6 +1039,7 @@ def register_repo_commands(subparsers: argparse._SubParsersAction[argparse.Argum
     install.add_argument("--skip-skill", action="store_true", help="Skip installing the DecisionOps skill bundle")
     install.add_argument("--skip-mcp", action="store_true", help="Skip configuring the DecisionOps MCP server entry")
     install.add_argument("--output-dir", help="Intermediate build output directory")
+    install.add_argument("--refresh", action="store_true", help="Download the current published skill and platform catalog before installing; fail if refresh is unavailable")
     install.add_argument("--source-dir", help="Local skill repository or decision-ops bundle directory")
     install.add_argument("--skill-name", help="Skill bundle name override (default: decision-ops)")
     install.add_argument("--server-name", help="MCP server name override (default: decision-ops-mcp)")

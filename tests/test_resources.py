@@ -137,6 +137,17 @@ class ResourceTests(unittest.TestCase):
         self.assertEqual(Path(platforms_dir).resolve(), (repo_root / "platforms").resolve())
         self.assertEqual(Path(skill_dir).resolve(), bundle_dir.resolve())
 
+    def test_explicit_refresh_replaces_existing_valid_cache(self) -> None:
+        cache_dir = self.resources._skill_repo_cache_dir()
+        (cache_dir / "platforms").mkdir(parents=True, exist_ok=True)
+        (cache_dir / "decision-ops").mkdir()
+        (cache_dir / "platforms" / "codex.toml").write_text('id = "codex"\n')
+        (cache_dir / "decision-ops" / "SKILL.md").write_text("old prompt")
+        self.resources._write_skill_repo_manifest(cache_dir,repo_url=self.resources.DEFAULT_SKILL_REPO_URL,ref=self.resources.DEFAULT_SKILL_REPO_REF,archive_url="https://example.com/archive")
+        with patch.object(self.resources, "_download_skill_repo", return_value=cache_dir) as download:
+            self.resources.ensure_skill_repo_cache(refresh=True)
+            download.assert_called_once_with(self.resources.DEFAULT_SKILL_REPO_URL,self.resources.DEFAULT_SKILL_REPO_REF)
+
     def test_download_skill_repo_rejects_zip_path_traversal(self) -> None:
         buffer = io.BytesIO()
         with zipfile.ZipFile(buffer, "w") as archive:

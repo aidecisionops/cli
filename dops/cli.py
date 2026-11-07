@@ -25,6 +25,7 @@ ROOT_HELP_SECTIONS = [
         "title": "Bind and verify a repository",
         "commands": [
             ("init", "Bind the current repository to a DecisionOps project"),
+            ("manifest show", "Validate and read the repository binding as JSON"),
             ("install", "Install DecisionOps skill + MCP config"),
             ("uninstall", "Remove installed skills, MCP entries, and local auth state"),
             ("doctor", "Diagnose local setup and repo binding issues"),

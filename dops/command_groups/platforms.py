@@ -5,11 +5,13 @@ import argparse
 from ..argparse_utils import DopsHelpFormatter, add_examples
 from ..installer import build_platforms
 from ..platforms import load_platforms
-from ..resources import find_platforms_dir, find_skill_source_dir, resolve_local_skill_repo
+from ..resources import ensure_skill_repo_cache, find_platforms_dir, find_skill_source_dir, resolve_local_skill_repo
 from ..ui import console
 
 
-def run_platform_list() -> None:
+def run_platform_list(*, refresh: bool = False) -> None:
+    if refresh:
+        ensure_skill_repo_cache(refresh=True)
     platforms = load_platforms(find_platforms_dir())
     for platform_def in platforms.values():
         caps = ", ".join(
@@ -51,7 +53,8 @@ def register_platform_commands(subparsers: argparse._SubParsersAction[argparse.A
     add_examples(platform_parser, ["dops platform list", "dops platform build codex --output-dir build"])
 
     platform_list = platform_subparsers.add_parser("list", formatter_class=DopsHelpFormatter, help="List supported platforms", description="List supported platforms")
-    platform_list.set_defaults(func=lambda args: run_platform_list())
+    platform_list.add_argument("--refresh", action="store_true", help="Download the current published skill and platform catalog first")
+    platform_list.set_defaults(func=lambda args: run_platform_list(refresh=args.refresh))
 
     platform_build = platform_subparsers.add_parser("build", formatter_class=DopsHelpFormatter, help="Build platform bundles", description="Build platform bundles")
     platform_build.add_argument("platform", nargs="*", help="Platform ID(s) to build (defaults to all supported platforms)")
