@@ -1,0 +1,1985 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "decision-ops-api",
+  "description": "DecisionOps API input/output schemas",
+  "$defs": {
+    "ServiceToken": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "orgId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "tokenHash": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "lastUsedAt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "orgId",
+        "name",
+        "tokenHash",
+        "scopes",
+        "createdAt",
+        "lastUsedAt"
+      ],
+      "additionalProperties": false
+    },
+    "McpCall": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "tool": {
+          "type": "string",
+          "enum": [
+            "do-prepare-decision-gate",
+            "do-search-decisions",
+            "do-create-decision-draft",
+            "do-validate-decision",
+            "do-publish-decision",
+            "do-get-decision",
+            "do-discover-decisions"
+          ]
+        },
+        "input": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "tool",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "DecisionOpsDiscoverInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string",
+          "description": "Organization identifier."
+        },
+        "project_id": {
+          "type": "string",
+          "description": "Project identifier."
+        },
+        "repo_ref": {
+          "type": "string",
+          "description": "Repository reference as \"owner/repo\"."
+        },
+        "branch": {
+          "description": "Branch to analyze. Defaults to main.",
+          "type": "string"
+        },
+        "analyzers": {
+          "description": "Analyzer IDs to run. Defaults to all.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence_threshold": {
+          "description": "Minimum confidence threshold (0-1). Default 0.3.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "max_suggestions": {
+          "description": "Max suggestions to return. Default 25.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        }
+      },
+      "required": [
+        "org_id",
+        "project_id",
+        "repo_ref"
+      ],
+      "additionalProperties": false
+    },
+    "PlannerEvidence": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "description": "Evidence type: file-presence, dependency, config-value, file-content, git-commit, documentation."
+        },
+        "source": {
+          "type": "string",
+          "description": "File or package where evidence was found."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Description of the evidence."
+        }
+      },
+      "required": [
+        "kind",
+        "source",
+        "detail"
+      ],
+      "additionalProperties": false
+    },
+    "PlannerImpact": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "scope": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "level",
+        "scope",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "PlannerAmbiguity": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "possibleInterpretations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "description",
+        "possibleInterpretations"
+      ],
+      "additionalProperties": false
+    },
+    "PlannerAnalysis": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "description": "Evidence type: file-presence, dependency, config-value, file-content, git-commit, documentation."
+              },
+              "source": {
+                "type": "string",
+                "description": "File or package where evidence was found."
+              },
+              "detail": {
+                "type": "string",
+                "description": "Description of the evidence."
+              }
+            },
+            "required": [
+              "kind",
+              "source",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "impact": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "enum": [
+                "high",
+                "medium",
+                "low"
+              ]
+            },
+            "scope": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "level",
+            "scope",
+            "description"
+          ],
+          "additionalProperties": false
+        },
+        "ambiguities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "possibleInterpretations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "description",
+              "possibleInterpretations"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "discoveredBy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "evidence",
+        "impact",
+        "ambiguities",
+        "tags",
+        "discoveredBy",
+        "confidence"
+      ],
+      "additionalProperties": false
+    },
+    "DecisionOpsDiscoverOutput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "discovered_count": {
+          "type": "number",
+          "description": "Number of decisions discovered above threshold."
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "plannerId": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              },
+              "confidence": {
+                "type": "number"
+              },
+              "evidenceCount": {
+                "type": "number"
+              },
+              "type": {
+                "type": "string"
+              },
+              "analysis": {
+                "description": "Rich analysis data from the planner.",
+                "type": "object",
+                "properties": {
+                  "evidence": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "description": "Evidence type: file-presence, dependency, config-value, file-content, git-commit, documentation."
+                        },
+                        "source": {
+                          "type": "string",
+                          "description": "File or package where evidence was found."
+                        },
+                        "detail": {
+                          "type": "string",
+                          "description": "Description of the evidence."
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "source",
+                        "detail"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "impact": {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "type": "string",
+                        "enum": [
+                          "high",
+                          "medium",
+                          "low"
+                        ]
+                      },
+                      "scope": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "level",
+                      "scope",
+                      "description"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "ambiguities": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "description": {
+                          "type": "string"
+                        },
+                        "possibleInterpretations": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "description",
+                        "possibleInterpretations"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "discoveredBy": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "confidence": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "evidence",
+                  "impact",
+                  "ambiguities",
+                  "tags",
+                  "discoveredBy",
+                  "confidence"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "plannerId",
+              "title",
+              "category",
+              "confidence",
+              "evidenceCount",
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Summary of discovered decisions."
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "from",
+              "to",
+              "kind"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Relationships between decisions."
+        },
+        "analyzer_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Analyzers that participated."
+        }
+      },
+      "required": [
+        "discovered_count",
+        "decisions",
+        "edges",
+        "analyzer_ids"
+      ],
+      "additionalProperties": false
+    },
+    "DecisionOpsErrorCode": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "string",
+      "enum": [
+        "AUTH_REQUIRED",
+        "PROJECT_NOT_FOUND",
+        "VALIDATION_FAILED",
+        "VERSION_CONFLICT",
+        "NOT_FOUND",
+        "RATE_LIMITED"
+      ]
+    },
+    "DecisionOpsError": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "AUTH_REQUIRED",
+            "PROJECT_NOT_FOUND",
+            "VALIDATION_FAILED",
+            "VERSION_CONFLICT",
+            "NOT_FOUND",
+            "RATE_LIMITED"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "details": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "DecisionOpsRiskLevel": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "DecisionOpsMode": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "string",
+      "enum": [
+        "quick",
+        "comprehensive",
+        "custom"
+      ]
+    },
+    "DecisionOpsClientHints": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "recordable": {
+          "type": "boolean",
+          "description": "Client-side assessment of whether this task should be captured as a decision record."
+        },
+        "classification_reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Client-side rationale for the classification."
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "description": "Client-side estimated risk level."
+        },
+        "suggested_mode": {
+          "type": "string",
+          "enum": [
+            "quick",
+            "comprehensive"
+          ],
+          "description": "Client-side recommended search depth."
+        },
+        "signal_types": {
+          "description": "Decision domains detected by the client (e.g. [\"technical\", \"product\"]).",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "technical",
+              "product",
+              "business",
+              "governance"
+            ]
+          }
+        }
+      },
+      "required": [
+        "recordable",
+        "classification_reason",
+        "risk_level",
+        "suggested_mode"
+      ],
+      "additionalProperties": false,
+      "description": "Optional pre-classification hints from the AI agent. When provided, these take priority over backend heuristics."
+    },
+    "DecisionOpsPrepareGateInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "repo_ref": {
+          "description": "Optional repository reference as \"owner/repo\" or a GitHub repository URL. Provide this for repo-bound gate resolution.",
+          "type": "string"
+        },
+        "project_id": {
+          "description": "Optional project identifier for project-bound gate resolution when no repository context is available.",
+          "type": "string"
+        },
+        "branch": {
+          "description": "Target branch name. If omitted, the default branch is used when available.",
+          "type": "string"
+        },
+        "task_summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short natural-language summary of the task being evaluated."
+        },
+        "changed_paths": {
+          "description": "Optional list of changed file paths related to the task.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "client_hints": {
+          "description": "Optional pre-classification from the AI agent. The agent has better semantic understanding of the task than keyword heuristics, so when present these hints take priority over backend heuristic scoring. The backend may still override if its own LLM classification is available and disagrees.",
+          "type": "object",
+          "properties": {
+            "recordable": {
+              "type": "boolean",
+              "description": "Client-side assessment of whether this task should be captured as a decision record."
+            },
+            "classification_reason": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Client-side rationale for the classification."
+            },
+            "risk_level": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "description": "Client-side estimated risk level."
+            },
+            "suggested_mode": {
+              "type": "string",
+              "enum": [
+                "quick",
+                "comprehensive"
+              ],
+              "description": "Client-side recommended search depth."
+            },
+            "signal_types": {
+              "description": "Decision domains detected by the client (e.g. [\"technical\", \"product\"]).",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "technical",
+                  "product",
+                  "business",
+                  "governance"
+                ]
+              }
+            }
+          },
+          "required": [
+            "recordable",
+            "classification_reason",
+            "risk_level",
+            "suggested_mode"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "task_summary"
+      ],
+      "additionalProperties": false,
+      "description": "Input for resolving project context and decision recordability for a repository or project task."
+    },
+    "DecisionOpsPrepareGateOutput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string",
+          "description": "Resolved organization identifier."
+        },
+        "project_id": {
+          "type": "string",
+          "description": "Resolved project identifier for the repository or project context."
+        },
+        "repo": {
+          "type": "string",
+          "description": "Normalized repository id in \"owner/repo\" format, or empty when the gate was resolved from project context only."
+        },
+        "branch": {
+          "type": "string",
+          "description": "Resolved branch used for classification, or empty when no repository context is supplied."
+        },
+        "recordable": {
+          "type": "boolean",
+          "description": "Whether this task should be captured as an explicit decision record."
+        },
+        "classification_reason": {
+          "type": "string",
+          "description": "Human-readable rationale for the classification result."
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "description": "Estimated decision impact risk level."
+        },
+        "suggested_mode": {
+          "type": "string",
+          "enum": [
+            "quick",
+            "comprehensive"
+          ],
+          "description": "Recommended search depth for prior decisions."
+        }
+      },
+      "required": [
+        "org_id",
+        "project_id",
+        "repo",
+        "branch",
+        "recordable",
+        "classification_reason",
+        "risk_level",
+        "suggested_mode"
+      ],
+      "additionalProperties": false,
+      "description": "Resolved context and classification result for a potential decision task."
+    },
+    "DecisionOpsGateClassification": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "recordable": {
+          "type": "boolean",
+          "description": "Whether this task should be captured as an explicit decision record."
+        },
+        "classification_reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable rationale for the classification result."
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "description": "Estimated decision impact risk level."
+        },
+        "suggested_mode": {
+          "type": "string",
+          "enum": [
+            "quick",
+            "comprehensive"
+          ],
+          "description": "Recommended search depth for prior decisions."
+        }
+      },
+      "required": [
+        "recordable",
+        "classification_reason",
+        "risk_level",
+        "suggested_mode"
+      ],
+      "additionalProperties": false,
+      "description": "Classification payload for prepare-decision-gate."
+    },
+    "DecisionOpsSearchInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string",
+          "description": "Organization identifier."
+        },
+        "project_id": {
+          "type": "string",
+          "description": "Project identifier."
+        },
+        "terms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Search keywords or phrases."
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "quick",
+            "comprehensive",
+            "custom"
+          ],
+          "description": "Search mode: quick, comprehensive, or custom."
+        },
+        "limit": {
+          "description": "Maximum number of results to return.",
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "include_body": {
+          "description": "Whether to include the full body text in results.",
+          "type": "boolean"
+        },
+        "custom": {
+          "description": "Optional custom mode parameters.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "org_id",
+        "project_id",
+        "terms",
+        "mode"
+      ],
+      "additionalProperties": false,
+      "description": "Input for searching project decisions."
+    },
+    "DecisionOpsSearchItem": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Proposed",
+            "Accepted",
+            "Superseded"
+          ]
+        },
+        "date": {
+          "type": "string"
+        },
+        "score": {
+          "type": "number"
+        },
+        "snippet": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "superseded_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "related": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "status",
+        "date",
+        "score",
+        "snippet",
+        "superseded_by",
+        "related"
+      ],
+      "additionalProperties": false
+    },
+    "DecisionOpsSearchOutput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "Proposed",
+                  "Accepted",
+                  "Superseded"
+                ]
+              },
+              "date": {
+                "type": "string"
+              },
+              "score": {
+                "type": "number"
+              },
+              "snippet": {
+                "type": "string"
+              },
+              "body": {
+                "type": "string"
+              },
+              "superseded_by": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "related": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "status",
+              "date",
+              "score",
+              "snippet",
+              "superseded_by",
+              "related"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Ranked matching decisions."
+        },
+        "candidate_supersedes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Accepted decisions that may be superseded by a new decision."
+        },
+        "applied_parameters": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "quick",
+                "comprehensive",
+                "custom"
+              ],
+              "description": "Effective search mode applied."
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "description": "Effective result cap applied."
+            },
+            "include_body": {
+              "type": "boolean",
+              "description": "Effective include_body flag applied."
+            },
+            "custom": {
+              "description": "Effective custom parameters applied.",
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          },
+          "required": [
+            "mode",
+            "limit",
+            "include_body"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "items",
+        "candidate_supersedes",
+        "applied_parameters"
+      ],
+      "additionalProperties": false,
+      "description": "Decision search results and effective query parameters."
+    },
+    "DecisionOpsValidationPlan": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "metric": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Primary metric used to validate the decision outcome."
+        },
+        "baseline": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Current baseline value for the selected metric."
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Expected target value for the selected metric."
+        },
+        "by_date": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Target date (ISO or canonical date string)."
+        }
+      },
+      "required": [
+        "metric",
+        "baseline",
+        "target",
+        "by_date"
+      ],
+      "additionalProperties": false,
+      "description": "Validation plan for measuring whether a decision is successful."
+    },
+    "DecisionOpsScopeLevel": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "string",
+      "enum": [
+        "org",
+        "project",
+        "repo"
+      ]
+    },
+    "DecisionOpsCreateDraftInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string",
+          "description": "Organization identifier."
+        },
+        "project_id": {
+          "type": "string",
+          "description": "Project identifier used as the authoring and lookup context."
+        },
+        "scope_level": {
+          "default": "project",
+          "description": "Decision scope level: org, project, or repo. Defaults to project.",
+          "type": "string",
+          "enum": [
+            "org",
+            "project",
+            "repo"
+          ]
+        },
+        "repo_id": {
+          "description": "Required for repo-scoped drafts when the project has multiple linked repositories. Must be linked to the selected project.",
+          "type": "string"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Decision title."
+        },
+        "type": {
+          "default": "technical",
+          "description": "Decision type: technical, product, business, or governance.",
+          "type": "string",
+          "enum": [
+            "technical",
+            "product",
+            "business",
+            "governance"
+          ]
+        },
+        "context": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Problem context and constraints."
+        },
+        "decision": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Selected option and rationale summary."
+        },
+        "options": {
+          "default": [],
+          "description": "Candidate options considered.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "consequences": {
+          "default": [],
+          "description": "Expected outcomes and tradeoffs.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "related": {
+          "default": [],
+          "description": "Related files, links, or decision ids.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "supersedes": {
+          "default": [],
+          "description": "Decision ids superseded by this draft.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "single_option_justification": {
+          "description": "Why one option was selected when alternatives were limited.",
+          "type": "string"
+        },
+        "validation_plan": {
+          "type": "object",
+          "properties": {
+            "metric": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Primary metric used to validate the decision outcome."
+            },
+            "baseline": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Current baseline value for the selected metric."
+            },
+            "target": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Expected target value for the selected metric."
+            },
+            "by_date": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Target date (ISO or canonical date string)."
+            }
+          },
+          "required": [
+            "metric",
+            "baseline",
+            "target",
+            "by_date"
+          ],
+          "additionalProperties": false,
+          "description": "Validation plan for the decision."
+        },
+        "planner_analysis": {
+          "description": "Rich analysis data from the planner, stored in indexingTrace when present.",
+          "type": "object",
+          "properties": {
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "description": "Evidence type: file-presence, dependency, config-value, file-content, git-commit, documentation."
+                  },
+                  "source": {
+                    "type": "string",
+                    "description": "File or package where evidence was found."
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Description of the evidence."
+                  }
+                },
+                "required": [
+                  "kind",
+                  "source",
+                  "detail"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "impact": {
+              "type": "object",
+              "properties": {
+                "level": {
+                  "type": "string",
+                  "enum": [
+                    "high",
+                    "medium",
+                    "low"
+                  ]
+                },
+                "scope": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "level",
+                "scope",
+                "description"
+              ],
+              "additionalProperties": false
+            },
+            "ambiguities": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string"
+                  },
+                  "possibleInterpretations": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "description",
+                  "possibleInterpretations"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "discoveredBy": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "confidence": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "evidence",
+            "impact",
+            "ambiguities",
+            "tags",
+            "discoveredBy",
+            "confidence"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "org_id",
+        "project_id",
+        "scope_level",
+        "title",
+        "type",
+        "context",
+        "decision",
+        "options",
+        "consequences",
+        "related",
+        "supersedes",
+        "validation_plan"
+      ],
+      "additionalProperties": false,
+      "description": "Input for creating a decision draft in the central decision register."
+    },
+    "DecisionOpsCreateDraftOutput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "decision_id": {
+          "type": "string",
+          "description": "Created decision id."
+        },
+        "version": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Initial optimistic concurrency version."
+        },
+        "status": {
+          "type": "string",
+          "const": "Proposed",
+          "description": "Initial workflow status."
+        }
+      },
+      "required": [
+        "decision_id",
+        "version",
+        "status"
+      ],
+      "additionalProperties": false,
+      "description": "Result of creating a decision draft."
+    },
+    "DecisionOpsValidationIssue": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "field",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "DecisionOpsValidateInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string",
+          "description": "Organization identifier."
+        },
+        "project_id": {
+          "type": "string",
+          "description": "Project identifier used as the validation context."
+        },
+        "decision_id": {
+          "description": "Existing decision id to validate.",
+          "type": "string"
+        },
+        "draft": {
+          "description": "Inline draft payload to validate.",
+          "type": "object",
+          "properties": {
+            "org_id": {
+              "type": "string",
+              "description": "Organization identifier."
+            },
+            "project_id": {
+              "type": "string",
+              "description": "Project identifier used as the authoring and lookup context."
+            },
+            "scope_level": {
+              "default": "project",
+              "description": "Decision scope level: org, project, or repo. Defaults to project.",
+              "type": "string",
+              "enum": [
+                "org",
+                "project",
+                "repo"
+              ]
+            },
+            "repo_id": {
+              "description": "Required for repo-scoped drafts when the project has multiple linked repositories. Must be linked to the selected project.",
+              "type": "string"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Decision title."
+            },
+            "type": {
+              "default": "technical",
+              "description": "Decision type: technical, product, business, or governance.",
+              "type": "string",
+              "enum": [
+                "technical",
+                "product",
+                "business",
+                "governance"
+              ]
+            },
+            "context": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Problem context and constraints."
+            },
+            "decision": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Selected option and rationale summary."
+            },
+            "options": {
+              "default": [],
+              "description": "Candidate options considered.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "consequences": {
+              "default": [],
+              "description": "Expected outcomes and tradeoffs.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "related": {
+              "default": [],
+              "description": "Related files, links, or decision ids.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "supersedes": {
+              "default": [],
+              "description": "Decision ids superseded by this draft.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "single_option_justification": {
+              "description": "Why one option was selected when alternatives were limited.",
+              "type": "string"
+            },
+            "validation_plan": {
+              "type": "object",
+              "properties": {
+                "metric": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Primary metric used to validate the decision outcome."
+                },
+                "baseline": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Current baseline value for the selected metric."
+                },
+                "target": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Expected target value for the selected metric."
+                },
+                "by_date": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Target date (ISO or canonical date string)."
+                }
+              },
+              "required": [
+                "metric",
+                "baseline",
+                "target",
+                "by_date"
+              ],
+              "additionalProperties": false,
+              "description": "Validation plan for the decision."
+            },
+            "planner_analysis": {
+              "description": "Rich analysis data from the planner, stored in indexingTrace when present.",
+              "type": "object",
+              "properties": {
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "description": "Evidence type: file-presence, dependency, config-value, file-content, git-commit, documentation."
+                      },
+                      "source": {
+                        "type": "string",
+                        "description": "File or package where evidence was found."
+                      },
+                      "detail": {
+                        "type": "string",
+                        "description": "Description of the evidence."
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "source",
+                      "detail"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "impact": {
+                  "type": "object",
+                  "properties": {
+                    "level": {
+                      "type": "string",
+                      "enum": [
+                        "high",
+                        "medium",
+                        "low"
+                      ]
+                    },
+                    "scope": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "level",
+                    "scope",
+                    "description"
+                  ],
+                  "additionalProperties": false
+                },
+                "ambiguities": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "description": {
+                        "type": "string"
+                      },
+                      "possibleInterpretations": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "description",
+                      "possibleInterpretations"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "discoveredBy": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "confidence": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "evidence",
+                "impact",
+                "ambiguities",
+                "tags",
+                "discoveredBy",
+                "confidence"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "org_id",
+            "project_id",
+            "scope_level",
+            "title",
+            "type",
+            "context",
+            "decision",
+            "options",
+            "consequences",
+            "related",
+            "supersedes",
+            "validation_plan"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "org_id",
+        "project_id"
+      ],
+      "additionalProperties": false
+    },
+    "DecisionOpsValidateOutput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "valid": {
+          "type": "boolean",
+          "description": "Whether the draft passes validation checks."
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "field",
+              "message"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Blocking validation issues."
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "field",
+              "message"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Non-blocking validation warnings."
+        }
+      },
+      "required": [
+        "valid",
+        "errors",
+        "warnings"
+      ],
+      "additionalProperties": false,
+      "description": "Validation result for a decision draft or existing decision, including scope-resolution checks for inline draft creation."
+    },
+    "DecisionOpsPublishInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string",
+          "description": "Organization identifier."
+        },
+        "project_id": {
+          "type": "string",
+          "description": "Project identifier."
+        },
+        "decision_id": {
+          "type": "string",
+          "description": "Decision id to publish."
+        },
+        "expected_version": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Expected current version for optimistic concurrency."
+        }
+      },
+      "required": [
+        "org_id",
+        "project_id",
+        "decision_id",
+        "expected_version"
+      ],
+      "additionalProperties": false,
+      "description": "Input for publishing a validated decision."
+    },
+    "DecisionOpsPublishOutput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "decision_id": {
+          "type": "string",
+          "description": "Published decision id."
+        },
+        "status": {
+          "type": "string",
+          "const": "Accepted",
+          "description": "Workflow status after publish."
+        },
+        "supersede_updates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "old_id": {
+                "type": "string",
+                "description": "Decision id superseded by the published decision."
+              },
+              "superseded_by": {
+                "type": "string",
+                "description": "Decision id that supersedes old_id."
+              }
+            },
+            "required": [
+              "old_id",
+              "superseded_by"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "published_at": {
+          "type": "string",
+          "description": "Publish timestamp."
+        },
+        "version": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "New version after publish."
+        }
+      },
+      "required": [
+        "decision_id",
+        "status",
+        "supersede_updates",
+        "published_at",
+        "version"
+      ],
+      "additionalProperties": false,
+      "description": "Result of publishing a decision."
+    },
+    "DecisionOpsGetDecisionInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string",
+          "description": "Organization identifier."
+        },
+        "project_id": {
+          "type": "string",
+          "description": "Project identifier."
+        },
+        "decision_id": {
+          "type": "string",
+          "description": "Decision id to fetch."
+        }
+      },
+      "required": [
+        "org_id",
+        "project_id",
+        "decision_id"
+      ],
+      "additionalProperties": false,
+      "description": "Input for retrieving a decision record in project context."
+    },
+    "DecisionOpsDecisionRecord": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Internal record id."
+        },
+        "org_id": {
+          "type": "string",
+          "description": "Organization identifier."
+        },
+        "project_id": {
+          "type": "string",
+          "description": "Project identifier."
+        },
+        "scope_level": {
+          "type": "string",
+          "enum": [
+            "org",
+            "project",
+            "repo"
+          ],
+          "description": "Decision scope level: org, project, or repo."
+        },
+        "repo": {
+          "type": "string",
+          "description": "Primary repository id in \"owner/repo\" format for repo-scoped decisions, or empty when not applicable."
+        },
+        "branch": {
+          "type": "string",
+          "description": "Branch associated with the primary repository context, or empty when not applicable."
+        },
+        "decision_id": {
+          "type": "string",
+          "description": "Stable decision id."
+        },
+        "title": {
+          "type": "string",
+          "description": "Decision title."
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "technical",
+            "product",
+            "business",
+            "governance"
+          ],
+          "description": "Decision type."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Proposed",
+            "Accepted",
+            "Superseded"
+          ],
+          "description": "Workflow status for clients."
+        },
+        "internal_status": {
+          "type": "string",
+          "enum": [
+            "proposed",
+            "accepted",
+            "deprecated",
+            "superseded"
+          ],
+          "description": "Internal persisted status."
+        },
+        "context": {
+          "type": "string",
+          "description": "Decision context body."
+        },
+        "decision": {
+          "type": "string",
+          "description": "Decision statement body."
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Candidate options."
+        },
+        "consequences": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Consequences and tradeoffs."
+        },
+        "related": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Related links and references."
+        },
+        "supersedes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Decision ids superseded by this decision."
+        },
+        "validation_plan": {
+          "type": "object",
+          "properties": {
+            "metric": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Primary metric used to validate the decision outcome."
+            },
+            "baseline": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Current baseline value for the selected metric."
+            },
+            "target": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Expected target value for the selected metric."
+            },
+            "by_date": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Target date (ISO or canonical date string)."
+            }
+          },
+          "required": [
+            "metric",
+            "baseline",
+            "target",
+            "by_date"
+          ],
+          "additionalProperties": false,
+          "description": "Decision validation plan."
+        },
+        "version": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Current optimistic concurrency version."
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Creation timestamp."
+        },
+        "updated_at": {
+          "type": "string",
+          "description": "Last update timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "org_id",
+        "project_id",
+        "scope_level",
+        "repo",
+        "branch",
+        "decision_id",
+        "title",
+        "type",
+        "status",
+        "internal_status",
+        "context",
+        "decision",
+        "options",
+        "consequences",
+        "related",
+        "supersedes",
+        "validation_plan",
+        "version",
+        "created_at",
+        "updated_at"
+      ],
+      "additionalProperties": false,
+      "description": "Decision record returned by the decision-ops tools."
+    }
+  }
+}

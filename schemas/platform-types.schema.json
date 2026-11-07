@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "platform-types",
+  "description": "Platform configuration types shared across CLI, Skill, and Decision-Record.",
+  "$defs": {
+    "PlatformInstallSpec": {
+      "type": "object",
+      "properties": {
+        "supported": { "type": "boolean" },
+        "build_path": { "type": "string" },
+        "install_path_env": { "type": "string" },
+        "install_path_default": { "type": "string" },
+        "install_root_env": { "type": "string" },
+        "install_root_default": { "type": "string" },
+        "install_path_suffix": { "type": "string" },
+        "scope": { "type": "string", "enum": ["user", "project"] },
+        "format": { "type": "string", "enum": ["codex_toml", "json_map"] },
+        "root_key": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "AuthTrigger": {
+      "description": "A single action a user (or dops itself) can take to (re)trigger MCP OAuth for this platform. `kind=cli` triggers can be executed directly by `dops auth`; other kinds are rendered as human-readable hints.",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["cli", "slash", "palette", "manual"]
+        },
+        "reason": {
+          "type": "string",
+          "enum": ["primary", "reset"],
+          "default": "primary"
+        },
+        "label": { "type": "string" },
+        "hint": { "type": "string" },
+        "command": {
+          "description": "argv array (template placeholders allowed). Required when kind=cli.",
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["kind"],
+      "additionalProperties": false
+    },
+    "PlatformAuthSpec": {
+      "type": "object",
+      "properties": {
+        "mode": { "type": "string" },
+        "instructions": {
+          "description": "Deprecated in favor of `triggers`; retained for backward compatibility.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "triggers": {
+          "description": "Typed auth triggers. Preferred over the flat `instructions` list because it lets dops distinguish commands it can execute from instructions the user must follow.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/AuthTrigger" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PlatformDefinition": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "display_name": { "type": "string" },
+        "skill": { "$ref": "#/$defs/PlatformInstallSpec" },
+        "mcp": { "$ref": "#/$defs/PlatformInstallSpec" },
+        "manifest": { "$ref": "#/$defs/PlatformInstallSpec" },
+        "auth": { "$ref": "#/$defs/PlatformAuthSpec" }
+      },
+      "required": ["id", "display_name"],
+      "additionalProperties": false
+    },
+    "PlatformCatalogEntry": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "display_name": { "type": "string" },
+        "platform_definition": { "type": "string" },
+        "skill": {
+          "type": "object",
+          "properties": {
+            "supported": { "type": "boolean" },
+            "install_path_template": { "type": ["string", "null"] },
+            "install_path_env": { "type": ["string", "null"] }
+          },
+          "required": ["supported", "install_path_template", "install_path_env"],
+          "additionalProperties": false
+        },
+        "mcp": {
+          "type": "object",
+          "properties": {
+            "supported": { "type": "boolean" },
+            "scope": { "type": ["string", "null"], "enum": ["user", "project", null] },
+            "config_path_template": { "type": ["string", "null"] },
+            "config_path_env": { "type": ["string", "null"] },
+            "format": { "type": ["string", "null"], "enum": ["codex_toml", "json_map", null] },
+            "root_key": { "type": ["string", "null"] }
+          },
+          "required": ["supported", "scope", "config_path_template", "config_path_env", "format", "root_key"],
+          "additionalProperties": false
+        },
+        "manifest": {
+          "type": "object",
+          "properties": {
+            "supported": { "type": "boolean" },
+            "path_template": { "type": ["string", "null"] }
+          },
+          "required": ["supported", "path_template"],
+          "additionalProperties": false
+        },
+        "auth": {
+          "type": "object",
+          "properties": {
+            "mode": { "type": ["string", "null"] },
+            "instructions": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "triggers": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/AuthTrigger" }
+            }
+          },
+          "required": ["mode", "instructions", "triggers"],
+          "additionalProperties": false
+        },
+        "default_server": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "url": { "type": "string" }
+          },
+          "required": ["name", "url"],
+          "additionalProperties": false
+        },
+        "cli_install_template": { "type": "string" }
+      },
+      "required": ["id", "display_name", "platform_definition", "skill", "mcp", "manifest", "auth", "default_server", "cli_install_template"],
+      "additionalProperties": false
+    },
+    "PlatformCatalog": {
+      "type": "object",
+      "properties": {
+        "version": { "type": "integer", "const": 1 },
+        "defaults": {
+          "type": "object",
+          "properties": {
+            "skill_name": { "type": "string" },
+            "mcp_server_name": { "type": "string" },
+            "mcp_server_url": { "type": "string" }
+          },
+          "required": ["skill_name", "mcp_server_name", "mcp_server_url"],
+          "additionalProperties": false
+        },
+        "platforms": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/PlatformCatalogEntry" }
+        }
+      },
+      "required": ["version", "defaults", "platforms"],
+      "additionalProperties": false
+    }
+  }
+}

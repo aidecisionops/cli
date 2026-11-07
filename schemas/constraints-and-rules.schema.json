@@ -1,0 +1,657 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "constraints-and-rules",
+  "description": "Constraint, policy, and rule types",
+  "$defs": {
+    "OrgConstraint": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "orgId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "default": "medium",
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "appliesTo": {
+          "default": "all",
+          "type": "string",
+          "enum": [
+            "org",
+            "repo",
+            "all"
+          ]
+        },
+        "status": {
+          "default": "active",
+          "type": "string",
+          "enum": [
+            "active",
+            "disabled"
+          ]
+        },
+        "rationale": {
+          "default": "",
+          "type": "string"
+        },
+        "source": {
+          "default": "manual",
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "orgId",
+        "name",
+        "description",
+        "severity",
+        "appliesTo",
+        "status",
+        "rationale",
+        "source",
+        "createdAt",
+        "updatedAt"
+      ],
+      "additionalProperties": false
+    },
+    "CreateOrgConstraintInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "default": "medium",
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "appliesTo": {
+          "default": "all",
+          "type": "string",
+          "enum": [
+            "org",
+            "repo",
+            "all"
+          ]
+        },
+        "rationale": {
+          "default": "",
+          "type": "string"
+        },
+        "source": {
+          "default": "manual",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "severity",
+        "appliesTo",
+        "rationale",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "PatchOrgConstraintInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "default": "medium",
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "appliesTo": {
+          "default": "all",
+          "type": "string",
+          "enum": [
+            "org",
+            "repo",
+            "all"
+          ]
+        },
+        "rationale": {
+          "default": "",
+          "type": "string"
+        },
+        "source": {
+          "default": "manual",
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "disabled"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "CheckConflictInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "repo": {
+          "type": "string"
+        },
+        "files": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "diff": {
+          "default": "",
+          "type": "string"
+        },
+        "changePlan": {
+          "default": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "repo",
+        "files",
+        "diff",
+        "changePlan"
+      ],
+      "additionalProperties": false
+    },
+    "CheckConflictOutput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "warn",
+            "fail"
+          ]
+        },
+        "score": {
+          "type": "number"
+        },
+        "conflicts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "decisionId": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "decisionId",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "requiredActions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "result",
+        "score",
+        "conflicts",
+        "requiredActions"
+      ],
+      "additionalProperties": false
+    },
+    "PolicyConfig": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "repoId": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "advisory",
+            "soft_block",
+            "hard_block"
+          ]
+        },
+        "threshold": {
+          "default": 0.6,
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "highImpactPaths": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "adrPaths": {
+          "default": [
+            "docs/adr/**",
+            "docs/decisions/**"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "managedByRules": {
+          "type": "boolean"
+        },
+        "updatedByPrincipalId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "repoId",
+        "mode",
+        "threshold",
+        "highImpactPaths",
+        "adrPaths"
+      ],
+      "additionalProperties": false
+    },
+    "RulesMode": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "string",
+      "enum": [
+        "advisory",
+        "blocking"
+      ]
+    },
+    "RulesScopeApply": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "string",
+      "enum": [
+        "all",
+        "selected"
+      ]
+    },
+    "RulesRuleType": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "string",
+      "enum": [
+        "validation",
+        "approval"
+      ]
+    },
+    "RulesSeverity": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "string",
+      "enum": [
+        "warn",
+        "block"
+      ]
+    },
+    "RulesConfig": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "mode": {
+          "default": "advisory",
+          "type": "string",
+          "enum": [
+            "advisory",
+            "blocking"
+          ]
+        },
+        "scope": {
+          "type": "object",
+          "properties": {
+            "applyTo": {
+              "default": "all",
+              "type": "string",
+              "enum": [
+                "all",
+                "selected"
+              ]
+            },
+            "selectedRepos": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "exceptions": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "applyTo",
+            "selectedRepos",
+            "exceptions"
+          ],
+          "additionalProperties": false
+        },
+        "updatedAtMs": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "updatedByPrincipalId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "mode",
+        "scope",
+        "updatedAtMs"
+      ],
+      "additionalProperties": false
+    },
+    "Rule": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "orgId": {
+          "type": "string"
+        },
+        "ruleType": {
+          "type": "string",
+          "enum": [
+            "validation",
+            "approval"
+          ]
+        },
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "warn",
+                "block"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requiredApprovals": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approverGroup": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "createdAtMs": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "createdByPrincipalId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "updatedAtMs": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "updatedByPrincipalId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "orgId",
+        "ruleType",
+        "enabled",
+        "name",
+        "description",
+        "createdAtMs",
+        "updatedAtMs"
+      ],
+      "additionalProperties": false
+    },
+    "CreateRuleInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ruleType": {
+          "type": "string",
+          "enum": [
+            "validation",
+            "approval"
+          ]
+        },
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "warn",
+                "block"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requiredApprovals": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approverGroup": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ruleType",
+        "enabled",
+        "name",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "PatchRuleInput": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ruleType": {
+          "type": "string",
+          "enum": [
+            "validation",
+            "approval"
+          ]
+        },
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "warn",
+                "block"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requiredApprovals": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approverGroup": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

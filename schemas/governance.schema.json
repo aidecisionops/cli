@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "governance",
+  "description": "Governance and monitoring types",
+  "$defs": {
+    "GovernanceSnapshot": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "coveragePercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "decisionHealthPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "driftRatePerWeek": {
+          "type": "number",
+          "minimum": 0
+        },
+        "sourceStatus": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "partial",
+            "empty"
+          ]
+        },
+        "reason": {
+          "default": "",
+          "type": "string"
+        }
+      },
+      "required": [
+        "coveragePercent",
+        "decisionHealthPercent",
+        "driftRatePerWeek",
+        "sourceStatus",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "MonitoringAlert": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "violation",
+            "review_due",
+            "drift"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "red",
+            "yellow",
+            "blue"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "relatedDecisionId": {
+          "type": "string"
+        },
+        "relatedRepo": {
+          "type": "string"
+        },
+        "timestampMs": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "severity",
+        "title",
+        "description",
+        "timestampMs"
+      ],
+      "additionalProperties": false
+    },
+    "RepoCoverageRow": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "repoName": {
+          "type": "string"
+        },
+        "decisionsAppliedCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "prRulesEnabled": {
+          "type": "boolean"
+        },
+        "driftSourceConnected": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "healthy",
+            "partial",
+            "at_risk"
+          ]
+        }
+      },
+      "required": [
+        "repoName",
+        "decisionsAppliedCount",
+        "prRulesEnabled",
+        "driftSourceConnected",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "SystemTimelineEvent": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "timestampMs": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "type": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "relatedDecisionId": {
+          "type": "string"
+        },
+        "relatedRepo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "timestampMs",
+        "type",
+        "message"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

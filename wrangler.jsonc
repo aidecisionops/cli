@@ -1,0 +1,16 @@
+{
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/config-schema.json",
+  "name": "decisionops-get-installer",
+  "main": "worker/src/index.js",
+  "compatibility_date": "2026-03-16",
+  "workers_dev": false,
+  "routes": [
+    "get.aidecisionops.com/dops",
+    "get.aidecisionops.com/dops.ps1",
+    "get.aidecisionops.com/healthz"
+  ],
+  "vars": {
+    "PUBLIC_INSTALL_BASE_URL": "https://get.aidecisionops.com",
+    "RELEASE_REPO_SLUG": "aidecisionops/cli"
+  }
+}

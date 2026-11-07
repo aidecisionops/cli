@@ -1,0 +1,53 @@
+name: CLI CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-and-package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            binary_path: dist/dops
+          - runner: macos-14
+            binary_path: dist/dops
+          - runner: windows-latest
+            binary_path: dist/dops.exe
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pyinstaller
+
+      - name: Code quality checks
+        run: python scripts/check_code_quality.py
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Build binary
+        run: |
+          pyinstaller --onefile --name dops --hidden-import=certifi --collect-data=certifi --hidden-import=_ssl dops_bootstrap.py
+
+      - name: Smoke test packaged binary
+        shell: bash
+        run: |
+          "${{ matrix.binary_path }}" --version
+          "${{ matrix.binary_path }}" --help >/dev/null
+          "${{ matrix.binary_path }}" config show
+          "${{ matrix.binary_path }}" platform list

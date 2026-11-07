@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "decisionops-dops"
+version = "0.1.26"
+description = "dops — repo-anchored CLI for working with decisions"
+readme = "README.md"
+requires-python = ">=3.13"
+license = {text = "Apache-2.0"}
+authors = [
+  {name = "DecisionOps, Inc."},
+]
+keywords = ["decisions", "architecture", "mcp", "cli", "devtools"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+  "certifi>=2024.8.30",
+  "pydantic>=2.0.0",
+  "prompt-toolkit>=3.0.51",
+  "rich>=14.0.0",
+]
+
+[project.urls]
+Homepage = "https://aidecisionops.com"
+Repository = "https://github.com/aidecisionops/cli"
+Issues = "https://github.com/aidecisionops/cli/issues"
+
+[project.scripts]
+dops = "dops.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["dops*"]
