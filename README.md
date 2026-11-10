@@ -50,7 +50,7 @@ dops update
 Pin to a specific release:
 
 ```bash
-dops update --version v0.1.28
+dops update --version v0.1.29
 ```
 
 This re-runs the same hosted installer flow used for first-time installation and writes the updated binary to the existing install directory unless you pass `--install-dir`.
@@ -78,7 +78,7 @@ bash ./publish-new-version.sh
 | Variable | Default | Description |
 |---|---|---|
 | `DOPS_INSTALL_DIR` | `~/.dops/bin` | Install location for the binary |
-| `DOPS_VERSION` | `latest` | Specific release tag such as `v0.1.28` |
+| `DOPS_VERSION` | `latest` | Specific release tag such as `v0.1.29` |
 
 ## Five-minute setup
 
@@ -370,3 +370,15 @@ Apache-2.0
 With dops 0.1.28 or later, run `dops platform list --refresh` to download current public resources, or `dops install <platform> --refresh` to refresh before installation. Add `--skip-mcp` when the existing MCP connection works. A failed refresh exits before configuration is changed. Existing local skill customizations should be reviewed before reinstalling.
 
 Skill-only location overrides are `CODEX_SKILLS_DIR`, `VSCODE_SKILLS_DIR`, `CLAUDE_SKILLS_DIR`, `CURSOR_SKILLS_DIR`, and `ANTIGRAVITY_SKILLS_DIR`. Codex MCP configuration still uses `~/.codex/config.toml`; its skill destination is `~/.agents/skills/decision-ops`. VS Code Copilot uses `~/.copilot/skills/decision-ops`.
+
+From a checkout bound to a DecisionOps project, run `dops decisions review`
+to see overdue reviews and drift in referenced files. The file check compares
+the commit checked out at `HEAD` with the latest ancestor at the recorded
+acceptance time. It reports deletions, detected renames, and changes totaling
+at least 100 added or deleted lines. Use an up-to-date checkout with complete
+history for the branch you want to review.
+
+Run `dops decisions register` to print a Markdown index of the project's central
+decisions, including implementation progress. Use the generated index for
+repository navigation and make edits in DecisionOps. Keep historical local
+records until their migration has been reviewed.

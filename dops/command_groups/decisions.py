@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import html
 import json
+from urllib.parse import quote
 from typing import Any
 
 from ..api_client import DopsClient
 from ..argparse_utils import DopsHelpFormatter, add_examples
+from ..decision_review import project_decisions, review_decision_paths
 from ..git import resolve_repo_path
 from ..ui import SelectOption, console, prompt_select, prompt_text, reset_flow_state
 from .shared import decision_id
@@ -200,6 +203,33 @@ def run_decisions_create(flags: argparse.Namespace) -> None:
     console.print(f"Created decision: {decision_id(decision)} (v{decision.get('version', '?')})")
 
 
+def run_decisions_review(flags: argparse.Namespace) -> None:
+    repo = resolve_repo_path(flags.repo_path)
+    if not repo:
+        raise RuntimeError("Run decision review from a Git checkout or pass --repo-path.")
+    client = _client_from_flags(flags)
+    decisions = project_decisions(client)
+    findings = [
+        {"id": item["id"], "flag": flag}
+        for item in decisions
+        for flag in item.get("review_flags", [])
+    ]
+    findings.extend(review_decision_paths(client, repo, decisions))
+    print(json.dumps(findings, indent=2))
+
+
+def run_decisions_register(flags: argparse.Namespace) -> None:
+    decisions = project_decisions(_client_from_flags(flags))
+    print("# Decision register\n\nGenerated from DecisionOps. Edit records in DecisionOps and regenerate this index.\n")
+    print("| Decision | Title | Status | Implementation |")
+    print("| --- | --- | --- | --- |")
+    for item in decisions:
+        identifier = item["id"]
+        url = f"https://app.aidecisionops.com/decisions?id={quote(identifier, safe='')}"
+        title = html.escape(" ".join(item["title"].split())).replace("|", "&#124;")
+        print(f"| [{identifier}]({url}) | {title} | {item['status']} | {item.get('implementation_state') or '—'} |")
+
+
 def register_decision_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     decisions = subparsers.add_parser("decisions", formatter_class=DopsHelpFormatter, help="Work with decisions", description="Work with decisions")
     decisions.set_defaults(func=lambda args: decisions.print_help() or 0)
@@ -227,6 +257,14 @@ def register_decision_commands(subparsers: argparse._SubParsersAction[argparse.A
     decisions_search.add_argument("--repo-path", help="Path to the target repository")
     decisions_search.add_argument("--json", action="store_true", help="Output result as JSON")
     decisions_search.set_defaults(func=lambda args: run_decisions_search(" ".join(args.terms or []), args))
+
+    review = decisions_subparsers.add_parser("review", help="Review decision health and file references in the current checkout")
+    review.add_argument("--repo-path", help="Path to the target repository")
+    review.set_defaults(func=run_decisions_review)
+
+    register = decisions_subparsers.add_parser("register", help="Print a generated Markdown index for the bound project")
+    register.add_argument("--repo-path", help="Path to the target repository")
+    register.set_defaults(func=run_decisions_register)
 
     decisions_create = decisions_subparsers.add_parser("create", formatter_class=DopsHelpFormatter, help="Create a new decision", description="Create a new decision")
     decisions_create.add_argument("--title", help="Decision title")
