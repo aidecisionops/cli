@@ -50,7 +50,7 @@ dops update
 Pin to a specific release:
 
 ```bash
-dops update --version v0.1.29
+dops update --version v0.1.30
 ```
 
 This re-runs the same hosted installer flow used for first-time installation and writes the updated binary to the existing install directory unless you pass `--install-dir`.
@@ -78,7 +78,7 @@ bash ./publish-new-version.sh
 | Variable | Default | Description |
 |---|---|---|
 | `DOPS_INSTALL_DIR` | `~/.dops/bin` | Install location for the binary |
-| `DOPS_VERSION` | `latest` | Specific release tag such as `v0.1.29` |
+| `DOPS_VERSION` | `latest` | Specific release tag such as `v0.1.30` |
 
 ## Five-minute setup
 
@@ -375,7 +375,7 @@ From a checkout bound to a DecisionOps project, run `dops decisions review`
 to see overdue reviews and drift in referenced files. The file check compares
 the commit checked out at `HEAD` with the latest ancestor at the recorded
 acceptance time. It reports deletions, detected renames, and changes totaling
-at least 100 added or deleted lines. Use an up-to-date checkout with complete
+at least 100 added or deleted lines, including files under referenced directories. The command exits with status 1 when it reports findings. Use an up-to-date checkout with complete
 history for the branch you want to review.
 
 Run `dops decisions register` to print a Markdown index of the project's central

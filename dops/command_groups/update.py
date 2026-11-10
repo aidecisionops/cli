@@ -117,4 +117,4 @@ def register_update_command(subparsers: argparse._SubParsersAction[argparse.Argu
     update.add_argument("--version", help="Specific release tag to install (defaults to latest)")
     update.add_argument("--install-dir", help="Target directory for the dops binary (default: ~/.dops/bin)")
     update.set_defaults(func=run_update)
-    add_examples(update, ["dops update", "dops update --version v0.1.29"])
+    add_examples(update, ["dops update", "dops update --version v0.1.30"])

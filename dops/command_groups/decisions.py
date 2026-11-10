@@ -203,7 +203,7 @@ def run_decisions_create(flags: argparse.Namespace) -> None:
     console.print(f"Created decision: {decision_id(decision)} (v{decision.get('version', '?')})")
 
 
-def run_decisions_review(flags: argparse.Namespace) -> None:
+def run_decisions_review(flags: argparse.Namespace) -> int:
     repo = resolve_repo_path(flags.repo_path)
     if not repo:
         raise RuntimeError("Run decision review from a Git checkout or pass --repo-path.")
@@ -216,6 +216,7 @@ def run_decisions_review(flags: argparse.Namespace) -> None:
     ]
     findings.extend(review_decision_paths(client, repo, decisions))
     print(json.dumps(findings, indent=2))
+    return 1 if findings else 0
 
 
 def run_decisions_register(flags: argparse.Namespace) -> None:

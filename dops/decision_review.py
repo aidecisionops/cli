@@ -58,13 +58,17 @@ def review_decision_paths(client: DopsClient, repo: str, decisions: list[dict]) 
         if decision["status"] != "Accepted" or not (paths := _repo_paths(decision)):
             continue
         decision_id = decision["id"]
-        history = client.request("GET", f"/v1/decisions/{quote(decision_id, safe='')}/history?limit=100")
-        if not isinstance(history, dict) or not isinstance(history.get("history"), list):
-            raise RuntimeError(f"Could not read acceptance history for {decision_id}.")
-
-        accepted = next((revision for revision in history["history"]
-                         if revision.get("changeType") == "status_change"
-                         and revision.get("snapshot", {}).get("status") == "accepted"), None)
+        history_path = f"/v1/decisions/{quote(decision_id, safe='')}/history"
+        accepted = None
+        for query in ("accepted_only=true&limit=1", "limit=100"):
+            history = client.request("GET", f"{history_path}?{query}")
+            if not isinstance(history, dict) or not isinstance(history.get("history"), list):
+                raise RuntimeError(f"Could not read acceptance history for {decision_id}.")
+            accepted = next((revision for revision in history["history"]
+                             if revision.get("changeType") == "status_change"
+                             and revision.get("snapshot", {}).get("status") == "accepted"), None)
+            if accepted:
+                break
         if not accepted:
             findings.append({"id": decision_id, "flag": "acceptance_history_missing"})
             continue
@@ -73,26 +77,32 @@ def review_decision_paths(client: DopsClient, repo: str, decisions: list[dict]) 
             findings.append({"id": decision_id, "flag": "acceptance_commit_missing"})
             continue
         renames = None
+        reviewed_paths = set()
         for path in paths:
             literal = ["--literal-pathspecs", "ls-tree", "-r", "--name-only", "-z"]
-            if path not in git_output(repo, *literal, base, "--", path).split("\0"):
-                continue
-            finding = {"id": decision_id, "path": path}
-            if path not in git_output(repo, *literal, "HEAD", "--", path).split("\0"):
+            baseline_files = set(git_output(repo, *literal, base, "--", path).split("\0")) - {""}
+            current_files = set(git_output(repo, *literal, "HEAD", "--", path).split("\0")) - {""}
+            for removed in sorted(baseline_files - current_files - reviewed_paths):
                 if renames is None:
                     renames = _renames(repo, base)
-                if path in renames:
-                    findings.append({**finding, "flag": "file_renamed", "new_path": renames[path]})
+                finding = {"id": decision_id, "path": removed}
+                if removed in renames:
+                    findings.append({**finding, "flag": "file_renamed", "new_path": renames[removed]})
                 else:
                     findings.append({**finding, "flag": "file_deleted"})
-                continue
-            stats = git_output(repo, "--literal-pathspecs", "diff", "--numstat", "--no-renames", base, "HEAD", "--", path)
-            if stats:
-                added, deleted, _ = stats.split("\t", 2)
+            candidates = (baseline_files & current_files) - reviewed_paths
+            stats = git_output(repo, "--literal-pathspecs", "diff", "--numstat", "-z", "--no-renames", base, "HEAD", "--", path)
+            for entry in stats.split("\0"):
+                if not entry:
+                    continue
+                added, deleted, changed_path = entry.split("\t", 2)
+                if changed_path not in candidates:
+                    continue
                 try:
                     changed = int(added) + int(deleted)
                 except ValueError:
                     continue
                 if changed >= 100:
-                    findings.append({**finding, "flag": "file_heavily_changed", "lines_changed": changed})
+                    findings.append({"id": decision_id, "path": changed_path, "flag": "file_heavily_changed", "lines_changed": changed})
+            reviewed_paths.update(baseline_files)
     return findings
